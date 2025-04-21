@@ -1,19 +1,19 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import UserLayout from './layouts/UserLayout';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import AdminLayout from './layouts/AdminLayout';
+import UserLayout from './layouts/UserLayout';
 
-import Home from './pages/user/Home';
-import ProductDetail from './pages/user/ProductDetail';
 import Cart from './pages/user/Cart';
 import Checkout from './pages/user/Checkout';
+import Home from './pages/user/Home';
 import Orders from './pages/user/Orders';
+import ProductDetail from './pages/user/ProductDetail';
 
 import Dashboard from './pages/admin/Dashboard';
-import AdminProducts from './pages/admin/Products';
-import AdminUsers from './pages/admin/Users';
 import AdminOrders from './pages/admin/Orders';
+import AdminProducts from './pages/admin/Products';
 import Reports from './pages/admin/Reports';
+import AdminUsers from './pages/admin/Users';
 
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";

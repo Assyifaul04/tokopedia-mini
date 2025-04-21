@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios, { getCsrfToken } from '../../services/axios'; // Pastikan mengimpor getCsrfToken
+import axios, { getCsrfToken } from '../../services/axios';
 
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -14,17 +14,18 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Mendapatkan token CSRF sebelum mengirimkan request login
       await getCsrfToken();
-
-      // Kirim data login ke backend
       const res = await axios.post('/api/login', form);
+      const user = res.data;
 
-      // Jika berhasil, simpan data user ke localStorage
-      localStorage.setItem('user', JSON.stringify(res.data));
+      localStorage.setItem('user', JSON.stringify(user));
 
-      // Arahkan user ke halaman utama setelah login berhasil
-      navigate('/');
+      // Redirect based on role
+      if (user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       setError('Email atau password salah');
     }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios, { getCsrfToken } from '../../services/axios'; // Pastikan mengimpor getCsrfToken
+import axios, { getCsrfToken } from '../../services/axios';
 
 const Register = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '', password_confirmation: '' });
@@ -14,20 +14,15 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Mendapatkan token CSRF sebelum mengirimkan request register
+
       await getCsrfToken();
 
-      // Kirim data register ke backend
       const res = await axios.post('/api/register', form);
-
-      // Jika berhasil, simpan data user ke localStorage
       localStorage.setItem('user', JSON.stringify(res.data));
 
-      // Arahkan user ke halaman utama setelah registrasi berhasil
       navigate('/login');
     } catch (err) {
       if (err.response && err.response.data.errors) {
-        // Menampilkan error validasi dari backend
         setError(Object.values(err.response.data.errors).join(', '));
       } else {
         setError('Terjadi kesalahan. Silakan coba lagi.');

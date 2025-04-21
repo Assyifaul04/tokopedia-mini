@@ -1,46 +1,34 @@
 // src/layouts/AdminLayout.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import Navbar from '../components/AdminNavbar';
 
 const AdminLayout = ({ children }) => {
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Navbar */}
+    <div className="flex flex-col min-h-screen bg-gray-100">
       <Navbar />
-      
-      <div className="flex flex-grow">
+
+      <div className="flex flex-1">
         {/* Sidebar */}
-        <div className="w-64 bg-gray-800 text-white p-4">
-          <h2 className="text-2xl font-bold mb-6">Dashboard Admin</h2>
-          <ul>
-            <li>
-              <Link to="/admin/dashboard" className="block py-2 px-4 hover:bg-gray-700">Dashboard</Link>
-            </li>
-            <li>
-              <Link to="/admin/products" className="block py-2 px-4 hover:bg-gray-700">Produk</Link>
-            </li>
-            <li>
-              <Link to="/admin/users" className="block py-2 px-4 hover:bg-gray-700">Pengguna</Link>
-            </li>
-            <li>
-              <Link to="/admin/orders" className="block py-2 px-4 hover:bg-gray-700">Pesanan</Link>
-            </li>
-            <li>
-              <Link to="/admin/reports" className="block py-2 px-4 hover:bg-gray-700">Laporan</Link>
-            </li>
-          </ul>
-        </div>
+        <aside className="w-64 bg-gray-900 text-white min-h-screen shadow-md">
+          <div className="p-6 border-b border-gray-700">
+            <h1 className="text-2xl font-bold text-white">🛍️ Admin Toko</h1>
+            <p className="text-sm text-gray-400 mt-1">Panel Kontrol</p>
+          </div>
+          <nav className="p-4 space-y-2">
+            <Link to="/dashboard" className="block px-4 py-2 rounded hover:bg-gray-700 transition">Dashboard</Link>
+            <Link to="/products" className="block px-4 py-2 rounded hover:bg-gray-700 transition">Produk</Link>
+            <Link to="/users" className="block px-4 py-2 rounded hover:bg-gray-700 transition">Pengguna</Link>
+            <Link to="/orders" className="block px-4 py-2 rounded hover:bg-gray-700 transition">Pesanan</Link>
+            <Link to="/reports" className="block px-4 py-2 rounded hover:bg-gray-700 transition">Laporan</Link>
+          </nav>
+        </aside>
 
-        {/* Main Content */}
-        <div className="flex-grow p-4">
+        {/* Main content */}
+        <main className="flex-1 p-6 overflow-y-auto">
           {children}
-        </div>
+        </main>
       </div>
-
-      {/* Footer */}
-      <Footer />
     </div>
   );
 };
