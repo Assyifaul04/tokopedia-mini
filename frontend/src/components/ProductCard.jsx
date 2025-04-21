@@ -1,34 +1,44 @@
-// src/components/CartItem.jsx
-import React from 'react';
+import React from "react";
+import { Link } from "react-router-dom";
 
-const CartItem = ({ item, onRemove, onQuantityChange }) => {
+export default function ProductCard({ product }) {
   return (
-    <div className="flex items-center justify-between p-4 border-b">
-      <img src={item.image} alt={item.name} className="w-16 h-16 object-cover" />
-      <div className="flex flex-col flex-grow ml-4">
-        <span className="font-bold">{item.name}</span>
-        <span className="text-sm text-gray-500">{item.price}</span>
-        <div className="flex items-center mt-2">
-          <button
-            onClick={() => onQuantityChange(item.id, item.quantity - 1)}
-            className="px-2 py-1 border rounded text-sm"
-          >
-            -
-          </button>
-          <span className="mx-2">{item.quantity}</span>
-          <button
-            onClick={() => onQuantityChange(item.id, item.quantity + 1)}
-            className="px-2 py-1 border rounded text-sm"
-          >
-            +
-          </button>
-        </div>
-      </div>
-      <button onClick={() => onRemove(item.id)} className="text-red-500 hover:underline">
-        Hapus
-      </button>
+    <div className="border rounded shadow p-4">
+      <img
+        src={product?.image || "/images/user-avatar.png"}
+        alt={product?.name || "Product"}
+        className="w-full h-40 object-cover rounded"
+      />
+
+      <h3 className="mt-2 text-lg font-semibold">
+        {product?.name || "Nama Produk"}
+      </h3>
+      <p className="text-gray-600">Rp{product?.price || "0"}</p>
+      <Link
+        to={`/product/${product?.id || "#"}`}
+        className="mt-2 inline-block text-sm text-blue-500 hover:underline"
+      >
+        View Details
+      </Link>
     </div>
   );
-};
+}
 
-export default CartItem;
+// import React from 'react'
+// import { Link } from 'react-router-dom'
+
+// export default function ProductCard({ product }) {
+//   return (
+//     <div className="border rounded shadow p-4">
+//       <img src={product.image} alt={product.name} className="w-full h-40 object-cover rounded" />
+//       <h3 className="mt-2 text-lg font-semibold">{product.name}</h3>
+//       <p className="text-gray-600">Rp{product.price}</p>
+//       <Link
+//         to={`/product/${product.id}`}
+//         className="mt-2 inline-block text-sm text-blue-500 hover:underline"
+//       >
+//         View Details
+//       </Link>
+//     </div>
+//   )
+// }

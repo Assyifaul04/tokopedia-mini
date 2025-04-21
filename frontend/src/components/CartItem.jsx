@@ -1,24 +1,15 @@
-import React from "react";
-import { FaTrashAlt } from "react-icons/fa";
+import React from 'react'
 
-const CartItem = ({ item, onRemove }) => {
+export default function CartItem({ item }) {
   return (
-    <div className="flex items-center justify-between bg-white p-4 shadow-md rounded-lg">
-      <div className="flex items-center">
-        <img src={item.product.image} alt={item.product.name} className="w-20 h-20 object-cover mr-4" />
-        <div>
-          <h4 className="text-lg font-semibold">{item.product.name}</h4>
-          <p className="text-sm text-gray-500">Rp{item.product.price}</p>
-        </div>
+    <div className="flex justify-between items-center border-b py-2">
+      <div>
+        <h4 className="font-semibold">{item.name}</h4>
+        <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
       </div>
-      <div className="flex items-center">
-        <span className="mr-4">x{item.quantity}</span>
-        <button onClick={() => onRemove(item.id)} className="text-red-500 hover:text-red-700">
-          <FaTrashAlt />
-        </button>
+      <div className="text-right">
+        <p className="text-sm text-gray-700">Rp{item.price}</p>
       </div>
     </div>
-  );
-};
-
-export default CartItem;
+  )
+}

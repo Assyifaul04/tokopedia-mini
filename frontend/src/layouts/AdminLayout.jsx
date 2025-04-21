@@ -34,3 +34,16 @@ const AdminLayout = ({ children }) => {
 };
 
 export default AdminLayout;
+
+
+// import React from 'react'
+// import AdminNavbar from '../components/AdminNavbar'
+
+// export default function AdminLayout({ children }) {
+//   return (
+//     <div>
+//       <AdminNavbar />
+//       <main className="p-4">{children}</main>
+//     </div>
+//   )
+// }
