@@ -1,4 +1,3 @@
-// src/components/Navbar.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -6,13 +5,18 @@ import {
 } from 'lucide-react';
 
 const Navbar = () => {
-  const user = JSON.parse(localStorage.getItem('user'));
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
+  
+  // Ambil data user dari localStorage jika ada
+  const user = JSON.parse(localStorage.getItem('user'));
 
   const handleLogout = () => {
+    // Hapus token dan user dari localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    
+    // Redirect ke halaman login setelah logout
     navigate('/login');
   };
 

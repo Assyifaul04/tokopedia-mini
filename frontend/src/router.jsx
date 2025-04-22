@@ -4,6 +4,7 @@ import AdminLayout from './layouts/AdminLayout'
 import UserLayout from './layouts/UserLayout'
 
 import AdminOrders from './pages/admin/AdminOrders'
+import AdminCategory from './pages/admin/AdminCategory'
 import AdminProducts from './pages/admin/AdminProducts'
 import Dashboard from './pages/admin/Dashboard'
 import AdminReports from './pages/admin/AdminReports'
@@ -25,6 +26,7 @@ const router = [
 
   // Admin
   { path: '/dashboard', component: Dashboard, layout: AdminLayout },
+  { path: '/AdminCategory', component: AdminCategory, layout: AdminLayout },
   { path: '/AdminOrders', component: AdminOrders, layout: AdminLayout },
   { path: '/AdminProducts', component: AdminProducts, layout: AdminLayout },
   { path: '/AdminReports', component: AdminReports, layout: AdminLayout },

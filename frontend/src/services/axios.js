@@ -1,13 +1,10 @@
+// src/services/axios.js
+
 import axios from 'axios';
 
-export const getCsrfToken = async () => {
-  try {
-    await axios.get('/sanctum/csrf-cookie');
-  } catch (error) {
-    console.error('Error getting CSRF token:', error);
-  }
-};
-axios.defaults.withCredentials = true;
+const instance = axios.create({
+  baseURL: 'http://localhost:8000/api',  // Sesuaikan dengan URL backend Anda
+  withCredentials: true,  // Pastikan ini diaktifkan jika menggunakan autentikasi berbasis cookie
+});
 
-export default axios;
-
+export default instance;

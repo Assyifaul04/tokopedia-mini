@@ -1,96 +1,94 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios, { getCsrfToken } from '../../services/axios';
+import axios from '../../services/axios';
+import { useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Login = () => {
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await getCsrfToken();
-      const res = await axios.post('/api/login', form);
-      const user = res.data;
+        if (!email || !password) {
+            setError("Email dan Password harus diisi");
+            return;
+        }
 
-      localStorage.setItem('user', JSON.stringify(user));
+        try {
+            const response = await axios.post('/login', { email, password });
 
-      if (user.role === 'admin') {
-        navigate('/dashboard');
-      } else {
-        navigate('/');
-      }
-    } catch (err) {
-      setError('Email atau password salah');
-    }
-  };
+            // Simpan token dan user ke localStorage
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('user', JSON.stringify({
+                name: response.data.name,
+                role: response.data.role,
+            }));
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 to-white px-4">
-      <div className="w-full max-w-md bg-white px-8 py-10 rounded-xl shadow-lg border border-gray-200">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-green-600">🛍️ tokopedia-mini</h2>
-          <p className="text-sm text-gray-500">Silakan login untuk masuk ke akun Anda</p>
+            // Redirect berdasarkan role
+            if (response.data.role === 'admin') {
+                navigate('/dashboard');
+            } else {
+                navigate('/');
+            }
+        } catch (error) {
+            setError('Email atau password salah');
+        }
+    };
+
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+                <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">Login</h2>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <input
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        required
+                    />
+                    <div className="relative">
+                        <input
+                            type={showPassword ? 'text' : 'password'}
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                            required
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                        >
+                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                    </div>
+                    {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+                    <button
+                        type="submit"
+                        className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition duration-200"
+                    >
+                        Login
+                    </button>
+                </form>
+                <p className="text-center text-sm text-gray-600 mt-4">
+                    Belum punya akun?{" "}
+                    <button
+                        onClick={() => navigate('/register')}
+                        className="text-green-600 hover:underline"
+                    >
+                        Daftar di sini
+                    </button>
+                </p>
+            </div>
         </div>
-
-        {error && (
-          <div className="bg-red-100 text-red-600 text-sm px-4 py-2 rounded mb-4 border border-red-200">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="text-sm text-gray-700 mb-1 block">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="contoh@email.com"
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-400 focus:outline-none"
-            />
-          </div>
-
-          <div className="mb-6">
-            <label className="text-sm text-gray-700 mb-1 block">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              placeholder="••••••••"
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-400 focus:outline-none"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition font-semibold"
-          >
-            Masuk
-          </button>
-        </form>
-
-        <p className="text-sm text-gray-500 text-center mt-6">
-          Belum punya akun?{' '}
-          <Link
-            to="/register"
-            className="text-green-600 hover:underline font-medium"
-          >
-            Daftar sekarang
-          </Link>
-        </p>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Login;
