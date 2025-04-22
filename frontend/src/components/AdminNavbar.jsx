@@ -61,7 +61,7 @@ const AdminNavbar = () => {
                 {/* Tambahkan menu lainnya di sini */}
                 <li>
                   <button
-                    onClick={() => navigate("/admin/settings")}
+                    onClick={() => navigate("/settings")}
                     className="w-full text-left px-4 py-2 hover:bg-gray-100 transition"
                   >
                     ⚙️ Pengaturan Akun

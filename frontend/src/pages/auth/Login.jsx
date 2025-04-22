@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios, { getCsrfToken } from '../../services/axios';
 
 const Login = () => {
@@ -21,7 +21,7 @@ const Login = () => {
       localStorage.setItem('user', JSON.stringify(user));
 
       if (user.role === 'admin') {
-        navigate('/admin');
+        navigate('/dashboard');
       } else {
         navigate('/');
       }

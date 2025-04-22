@@ -16,10 +16,10 @@ const AdminLayout = ({ children }) => {
 
         <nav className="flex-1 p-4 space-y-1">
           <NavItem to="/dashboard" icon={<FaTachometerAlt />} label="Dashboard" />
-          <NavItem to="/products" icon={<FaBox />} label="Produk" />
+          <NavItem to="/AdminProducts" icon={<FaBox />} label="Produk" />
           <NavItem to="/users" icon={<FaUsers />} label="Pengguna" />
-          <NavItem to="/orders" icon={<FaShoppingCart />} label="Pesanan" />
-          <NavItem to="/reports" icon={<FaChartLine />} label="Laporan" />
+          <NavItem to="/AdminOrders" icon={<FaShoppingCart />} label="Pesanan" />
+          <NavItem to="/AdminReports" icon={<FaChartLine />} label="Laporan" />
         </nav>
       </aside>
 

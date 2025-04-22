@@ -3,18 +3,18 @@ import React from 'react'
 import AdminLayout from './layouts/AdminLayout'
 import UserLayout from './layouts/UserLayout'
 
+import AdminOrders from './pages/admin/AdminOrders'
+import AdminProducts from './pages/admin/AdminProducts'
 import Dashboard from './pages/admin/Dashboard'
-import OrdersAdmin from './pages/admin/Orders'
-import Products from './pages/admin/Products'
-import Reports from './pages/admin/Reports'
+import AdminReports from './pages/admin/AdminReports'
 import Users from './pages/admin/Users'
 
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 
-import Home from './pages/user/Home'
 import Cart from './pages/user/Cart'
 import Checkout from './pages/user/Checkout'
+import Home from './pages/user/Home'
 import Orders from './pages/user/Orders'
 import ProductDetail from './pages/user/ProductDetail'
 
@@ -24,11 +24,11 @@ const router = [
   { path: '/register', component: Register, layout: React.Fragment },
 
   // Admin
-  { path: '/admin', component: Dashboard, layout: AdminLayout },
-  { path: '/admin/orders', component: OrdersAdmin, layout: AdminLayout },
-  { path: '/admin/products', component: Products, layout: AdminLayout },
-  { path: '/admin/reports', component: Reports, layout: AdminLayout },
-  { path: '/admin/users', component: Users, layout: AdminLayout },
+  { path: '/dashboard', component: Dashboard, layout: AdminLayout },
+  { path: '/AdminOrders', component: AdminOrders, layout: AdminLayout },
+  { path: '/AdminProducts', component: AdminProducts, layout: AdminLayout },
+  { path: '/AdminReports', component: AdminReports, layout: AdminLayout },
+  { path: '/users', component: Users, layout: AdminLayout },
 
   // User
   { path: '/', component: Home, layout: UserLayout },
