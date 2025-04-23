@@ -11,7 +11,8 @@ class CategoryController extends Controller
     // Menampilkan semua kategori
     public function index()
     {
-        return response()->json(Category::all());
+        $categories = Category::all();
+        return response()->json($categories);
     }
 
     // Menambah kategori baru

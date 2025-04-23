@@ -1,271 +1,291 @@
-// src/pages/admin/Products.jsx
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "../../services/axios";
-import Swal from "sweetalert2";
-import { FiEdit, FiTrash2, FiPlus, FiX } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion"; // 👉 for animation
+
+const Button = ({ children, onClick, className = "", ...props }) => (
+  <button
+    onClick={onClick}
+    className={`px-4 py-2 rounded-md font-medium transition-all ${
+      props.disabled
+        ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+        : "bg-green-600 hover:bg-green-700 text-white"
+    } ${className}`}
+    {...props}
+  >
+    {children}
+  </button>
+);
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
-    id: null,
     name: "",
     description: "",
     price: "",
-    category_id: "",
-    image: null,  // To store image file
-    stock_quantity: "",
+    stock: "",
     is_active: true,
+    category_id: "",
+    image: null,
   });
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchProducts();
     fetchCategories();
+    fetchProducts();
   }, []);
 
-  const fetchProducts = async () => {
-    const response = await axios.get("/admin/products");
-    setProducts(response.data);
-  };
-
   const fetchCategories = async () => {
-    const response = await axios.get("/admin/categories");
-    setCategories(response.data);
-  };
-
-  const handleSubmit = async () => {
     try {
-      console.log(form); // Log the form data
-      const formData = new FormData();
-      formData.append("name", form.name);
-      formData.append("description", form.description);
-      formData.append("price", form.price);
-      formData.append("category_id", form.category_id);
-      formData.append("stock_quantity", form.stock_quantity);
-      formData.append("is_active", form.is_active); // Ensure it's a boolean (true/false)
-  
-      if (form.image) {
-        formData.append("image", form.image); // Adding image if present
-      }
-  
-      if (form.id) {
-        await axios.post(`/admin/products/${form.id}?_method=PUT`, formData);
-        Swal.fire("Berhasil", "Produk berhasil diupdate", "success");
-      } else {
-        await axios.post("/admin/products", formData);
-        Swal.fire("Berhasil", "Produk berhasil ditambahkan", "success");
-      }
-      setIsFormOpen(false);
-      setForm({
-        id: null,
-        name: "",
-        description: "",
-        price: "",
-        category_id: "",
-        image: "",
-        stock_quantity: "",
-        is_active: true,
-      });
-      fetchProducts();
-    } catch (error) {
-      console.error(error.response?.data); // Log detailed error response from server
-      Swal.fire("Gagal", "Terjadi kesalahan saat menyimpan produk", "error");
+      const response = await axios.get("/admin/categories");
+      setCategories(response.data);
+    } catch {
+      setError("Gagal mengambil data kategori.");
     }
   };
-  
+
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get("/admin/products");
+      setProducts(response.data);
+    } catch {
+      setError("Gagal mengambil data produk.");
+    }
+  };
 
   const handleEdit = (product) => {
     setForm({
-      id: product.id,
       name: product.name,
       description: product.description,
       price: product.price,
-      category_id: product.category_id,
-      image: product.image,  // Handle existing image
-      stock_quantity: product.stock_quantity,
+      stock: product.stock,
       is_active: product.is_active,
+      category_id: product.category_id,
+      image: null,
     });
-    setIsFormOpen(true);
+    setShowForm(true);
   };
 
   const handleDelete = async (id) => {
-    const result = await Swal.fire({
-      title: "Hapus produk?",
-      text: "Tindakan ini tidak bisa dibatalkan!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Ya, hapus!",
-      cancelButtonText: "Batal",
-    });
-    if (result.isConfirmed) {
+    if (!confirm("Apakah Anda yakin ingin menghapus produk ini?")) return;
+
+    try {
       await axios.delete(`/admin/products/${id}`);
-      fetchProducts();
-      Swal.fire("Dihapus!", "Produk berhasil dihapus.", "success");
+      setProducts(products.filter((p) => p.id !== id));
+    } catch {
+      setError("Gagal menghapus produk.");
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.name || !form.price || !form.category_id) {
+      setError("Harap isi semua field yang wajib.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      const formData = new FormData();
+      Object.entries(form).forEach(([key, val]) => {
+        formData.append(key, key === "is_active" ? (val ? 1 : 0) : val);
+      });
+
+      const response = await axios.post("/admin/products", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setProducts([...products, response.data]);
+      setForm({
+        name: "",
+        description: "",
+        price: "",
+        stock: "",
+        is_active: true,
+        category_id: "",
+        image: null,
+      });
+      setShowForm(false);
+    } catch {
+      setError("Gagal menambahkan produk.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <div className="bg-white p-6 rounded shadow max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Manajemen Produk</h1>
-          <button
-            onClick={() => {
-              setForm({
-                id: null,
-                name: "",
-                description: "",
-                price: "",
-                category_id: "",
-                image: null,
-                stock_quantity: "",
-                is_active: true,
-              });
-              setIsFormOpen(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-          >
-            <FiPlus /> Tambah Produk
-          </button>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full table-auto text-sm border">
-            <thead className="bg-gray-100 text-left">
-              <tr>
-                <th className="border px-4 py-2">#</th>
-                <th className="border px-4 py-2">Nama</th>
-                <th className="border px-4 py-2">Harga</th>
-                <th className="border px-4 py-2">Stok</th>
-                <th className="border px-4 py-2">Kategori</th>
-                <th className="border px-4 py-2">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((product, index) => (
-                <tr key={product.id} className="hover:bg-gray-50">
-                  <td className="border px-4 py-2">{index + 1}</td>
-                  <td className="border px-4 py-2">{product.name}</td>
-                  <td className="border px-4 py-2">
-                    Rp{parseFloat(product.price).toLocaleString()}
-                  </td>
-                  <td className="border px-4 py-2">{product.stock_quantity}</td>
-                  <td className="border px-4 py-2">
-                    {product.category?.name || "-"}
-                  </td>
-                  <td className="border px-4 py-2 space-x-2">
-                    <button
-                      onClick={() => handleEdit(product)}
-                      className="bg-yellow-400 text-white px-3 py-1 rounded"
-                    >
-                      <FiEdit />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(product.id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded"
-                    >
-                      <FiTrash2 />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+    <div className="relative p-6 max-w-7xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-800">🛒 Manajemen Produk</h1>
+        <Button onClick={() => setShowForm(!showForm)}>
+          {showForm ? "Tutup Form" : "+ Tambah Produk"}
+        </Button>
       </div>
 
-      {isFormOpen && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded shadow w-full max-w-xl">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold">
-                {form.id ? "Edit Produk" : "Tambah Produk"}
-              </h2>
-              <button
-                onClick={() => setIsFormOpen(false)}
-                className="text-gray-500 hover:text-red-500"
-              >
-                <FiX />
-              </button>
-            </div>
-            <input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Nama"
-              className="w-full mb-2 px-4 py-2 border rounded"
-            />
-            <textarea
-              value={form.description}
-              onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
-              }
-              placeholder="Deskripsi"
-              className="w-full mb-2 px-4 py-2 border rounded"
-            />
-            <input
-              type="number"
-              value={form.price}
-              onChange={(e) => setForm({ ...form, price: e.target.value })}
-              placeholder="Harga"
-              className="w-full mb-2 px-4 py-2 border rounded"
-            />
-            <input
-              type="number"
-              value={form.stock_quantity}
-              onChange={(e) =>
-                setForm({ ...form, stock_quantity: e.target.value })
-              }
-              placeholder="Stok"
-              className="w-full mb-2 px-4 py-2 border rounded"
-            />
-            <select
-              value={form.category_id}
-              onChange={(e) =>
-                setForm({ ...form, category_id: e.target.value })
-              }
-              className="w-full mb-2 px-4 py-2 border rounded"
-            >
-              <option value="">Pilih Kategori</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-            <input
-              type="file"
-              onChange={(e) => setForm({ ...form, image: e.target.files[0] })}
-              className="w-full mb-2 px-4 py-2 border rounded"
-            />
-            <label className="flex items-center gap-2 mb-2">
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+
+      {/* Produk Table */}
+      <div className="overflow-x-auto shadow-md border rounded-lg mb-6 bg-white">
+        <table className="w-full text-sm text-gray-700">
+          <thead className="bg-gray-100 text-gray-600 uppercase">
+            <tr>
+              <th className="p-3 border">Gambar</th>
+              <th className="p-3 border">Nama</th>
+              <th className="p-3 border">Deskripsi</th>
+              <th className="p-3 border">Harga</th>
+              <th className="p-3 border">Stok</th>
+              <th className="p-3 border">Status</th>
+              <th className="p-3 border">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((prod) => (
+              <tr key={prod.id} className="hover:bg-gray-50 transition-all">
+                <td className="p-3 border text-center">
+                  {prod.image ? (
+                    <img
+                      src={prod.image}
+                      alt={prod.name}
+                      className="w-16 h-16 object-cover rounded-md mx-auto"
+                    />
+                  ) : (
+                    "N/A"
+                  )}
+                </td>
+                <td className="p-3 border">{prod.name}</td>
+                <td className="p-3 border">{prod.description}</td>
+                <td className="p-3 border">
+                  Rp{parseInt(prod.price).toLocaleString()}
+                </td>
+                <td className="p-3 border">{prod.stock}</td>
+                <td className="p-3 border">
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      prod.is_active
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {prod.is_active ? "Aktif" : "Nonaktif"}
+                  </span>
+                </td>
+                <td className="p-3 border space-x-2 text-center">
+                  <Button
+                    onClick={() => handleEdit(prod)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    onClick={() => handleDelete(prod.id)}
+                    className="bg-red-600 hover:bg-red-700 text-white text-sm"
+                  >
+                    Hapus
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Floating Form */}
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="absolute right-6 top-20 z-50 bg-white p-6 shadow-2xl rounded-xl border w-full max-w-lg"
+          >
+            <h2 className="text-xl font-semibold mb-4">📝 Tambah / Edit Produk</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <input
-                type="checkbox"
-                checked={form.is_active}
-                onChange={(e) =>
-                  setForm({ ...form, is_active: e.target.checked })
-                }
-                className="h-4 w-4"
+                type="text"
+                placeholder="Nama Produk"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                className="w-full p-3 border rounded-md"
+                required
               />
-              <span>Produk Aktif</span>
-            </label>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setIsFormOpen(false)}
-                className="px-4 py-2 bg-gray-300 rounded"
+              <select
+                value={form.category_id}
+                onChange={(e) =>
+                  setForm({ ...form, category_id: e.target.value })
+                }
+                className="w-full p-3 border rounded-md"
+                required
               >
-                Batal
-              </button>
-              <button
-                onClick={handleSubmit}
-                className="px-4 py-2 bg-green-600 text-white rounded"
-              >
-                {form.id ? "Update" : "Simpan"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+                <option value="">Pilih Kategori</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+              <textarea
+                placeholder="Deskripsi"
+                value={form.description}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
+                className="w-full p-3 border rounded-md"
+              />
+              <input
+                type="number"
+                placeholder="Harga"
+                value={form.price}
+                onChange={(e) => setForm({ ...form, price: e.target.value })}
+                className="w-full p-3 border rounded-md"
+                required
+              />
+              <input
+                type="number"
+                placeholder="Stok"
+                value={form.stock}
+                onChange={(e) => setForm({ ...form, stock: e.target.value })}
+                className="w-full p-3 border rounded-md"
+              />
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={form.is_active}
+                  onChange={() =>
+                    setForm({ ...form, is_active: !form.is_active })
+                  }
+                />
+                <label className="text-sm">
+                  {form.is_active ? "Aktif" : "Nonaktif"}
+                </label>
+              </div>
+              <input
+                type="file"
+                onChange={(e) =>
+                  setForm({ ...form, image: e.target.files[0] })
+                }
+                accept="image/*"
+              />
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="bg-gray-300 text-gray-700"
+                >
+                  Batal
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Menyimpan..." : "Simpan Produk"}
+                </Button>
+              </div>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
