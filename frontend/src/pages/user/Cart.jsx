@@ -1,34 +1,64 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import CartItem from "../../components/CartItem";
+import axios from "../../services/axios"; // Pastikan axios sudah diatur dengan base URL yang benar
 
 const Cart = () => {
-  const [cartItems, setCartItems] = useState(JSON.parse(localStorage.getItem("cart")) || []);
+  const [cartItems, setCartItems] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
 
+  // Fetch cart items when the component mounts
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      try {
+        const res = await axios.get("/cart");
+        setCartItems(res.data.data); // Menyimpan data cart items dari API
+      } catch (error) {
+        console.error("Failed to fetch cart items:", error);
+      }
+    };
+
+    fetchCartItems();
+  }, []);
+
+  // Calculate total price whenever cart items change
   useEffect(() => {
     const calculateTotalPrice = () => {
-      const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+      const total = cartItems.reduce(
+        (acc, item) => acc + item.product.price * item.quantity,
+        0
+      );
       setTotalPrice(total);
     };
 
     calculateTotalPrice();
   }, [cartItems]);
 
-  const handleUpdateQuantity = (id, newQuantity) => {
-    const updatedItems = cartItems.map((item) =>
-      item.id === id ? { ...item, quantity: newQuantity } : item
-    );
-    setCartItems(updatedItems);
-    localStorage.setItem("cart", JSON.stringify(updatedItems));
+  // Update quantity of item in the cart
+  const handleUpdateQuantity = async (id, newQuantity) => {
+    try {
+      const res = await axios.put(`/cart/${id}`, { quantity: newQuantity });
+      setCartItems((prevItems) =>
+        prevItems.map((item) =>
+          item.id === id ? { ...item, quantity: res.data.data.quantity } : item
+        )
+      );
+    } catch (error) {
+      console.error("Failed to update quantity:", error);
+    }
   };
 
-  const handleRemoveItem = (id) => {
-    const updatedItems = cartItems.filter((item) => item.id !== id);
-    setCartItems(updatedItems);
-    localStorage.setItem("cart", JSON.stringify(updatedItems));
+  // Remove item from the cart
+  const handleRemoveItem = async (id) => {
+    try {
+      await axios.delete(`/cart/${id}`);
+      setCartItems(cartItems.filter((item) => item.id !== id)); // Update state after removal
+    } catch (error) {
+      console.error("Failed to remove item:", error);
+    }
   };
 
+  // Handle checkout (redirect or trigger checkout process)
   const handleCheckout = () => {
     console.log("Proceeding to checkout...");
   };

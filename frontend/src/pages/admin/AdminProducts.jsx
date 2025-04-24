@@ -2,7 +2,14 @@ import React, { useState, useEffect } from "react";
 import axios from "../../services/axios";
 import { motion, AnimatePresence } from "framer-motion"; // 👉 for animation
 import Swal from "sweetalert2";
-import { FaEdit, FaTrash, FaPlus, FaSave, FaTimes } from "react-icons/fa";
+import {
+  FaEdit,
+  FaTrash,
+  FaPlus,
+  FaSave,
+  FaTimes,
+  FaCheck,
+} from "react-icons/fa";
 
 const Button = ({ children, icon: Icon, ...props }) => (
   <button
@@ -54,6 +61,16 @@ const AdminProducts = () => {
       await axios.put(`/admin/products/${product.id}/status`, {
         is_active: !product.is_active,
       });
+  
+      // Update status produk langsung di state
+      setProducts((prevProducts) =>
+        prevProducts.map((prod) =>
+          prod.id === product.id
+            ? { ...prod, is_active: !prod.is_active }
+            : prod
+        )
+      );
+  
       Swal.fire({
         icon: "success",
         title: "Berhasil!",
@@ -61,7 +78,6 @@ const AdminProducts = () => {
           product.is_active ? "dinonaktifkan" : "diaktifkan"
         }.`,
       });
-      fetchProducts(); // Refresh data produk
     } catch (error) {
       console.error("Gagal memperbarui status:", error);
       Swal.fire({
@@ -71,6 +87,7 @@ const AdminProducts = () => {
       });
     }
   };
+  
 
   const fetchProducts = async () => {
     try {
@@ -136,95 +153,104 @@ const AdminProducts = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!form.name || !form.price || !form.category_id) {
-      setError("Harap isi semua field yang wajib.");
-      return;
+  if (!form.name || !form.price || !form.category_id) {
+    setError("Harap isi semua field yang wajib.");
+    return;
+  }
+
+  setIsSubmitting(true);
+  setError("");
+
+  try {
+    const formData = new FormData();
+
+    Object.entries(form).forEach(([key, val]) => {
+      if (key === "image") {
+        if (val) formData.append("image", val); // hanya kirim kalau ada
+      } else {
+        formData.append(key, key === "is_active" ? (val ? 1 : 0) : val);
+      }
+    });
+
+    if (form.id) {
+      // Update existing product
+      formData.append("_method", "PUT");
+
+      const response = await axios.post(`/admin/products/${form.id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      // Update produk di state tanpa reload halaman
+      setProducts((prevProducts) =>
+        prevProducts.map((prod) =>
+          prod.id === form.id ? { ...prod, ...response.data } : prod
+        )
+      );
+
+      Swal.fire({
+        title: "Berhasil!",
+        text: "Produk berhasil diperbarui.",
+        icon: "success",
+        confirmButtonColor: "#3085d6",
+      });
+    } else {
+      // Create new product
+      const response = await axios.post("/admin/products", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setProducts((prevProducts) => [...prevProducts, response.data]);
+
+      Swal.fire({
+        title: "Berhasil!",
+        text: "Produk baru berhasil ditambahkan.",
+        icon: "success",
+        confirmButtonColor: "#3085d6",
+      });
     }
 
-    setIsSubmitting(true);
-    setError("");
+    // Reset form
+    setForm({
+      name: "",
+      description: "",
+      price: "",
+      stock: "",
+      is_active: true,
+      category_id: "",
+      image: null,
+    });
 
-    try {
-      const formData = new FormData();
+    setShowForm(false);
+  } catch (err) {
+    if (err.response?.status === 422) {
+      const messages = err.response.data.errors;
+      const errorText = Object.values(messages).flat().join(", ");
+      setError(errorText);
+    } else {
+      setError("Terjadi kesalahan saat menyimpan data produk.");
+    }
 
-      Object.entries(form).forEach(([key, val]) => {
-        if (key === "image") {
-          if (val) formData.append("image", val); // hanya kirim kalau ada
-        } else {
-          formData.append(key, key === "is_active" ? (val ? 1 : 0) : val);
-        }
-      });
+    Swal.fire({
+      title: "Gagal!",
+      text: "Gagal menyimpan produk. Silakan cek kembali input.",
+      icon: "error",
+      confirmButtonColor: "#d33",
+    });
 
-      if (form.id) {
-        // Update existing product
-        formData.append("_method", "PUT");
+    console.log(err.response?.data?.errors);
+  }
+};
 
-        await axios.post(`/admin/products/${form.id}`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-
-        Swal.fire({
-          title: "Berhasil!",
-          text: "Produk berhasil diperbarui.",
-          icon: "success",
-          confirmButtonColor: "#3085d6",
-        });
-      } else {
-        // Create new product
-        const response = await axios.post("/admin/products", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-
-        setProducts([...products, response.data]);
-
-        Swal.fire({
-          title: "Berhasil!",
-          text: "Produk baru berhasil ditambahkan.",
-          icon: "success",
-          confirmButtonColor: "#3085d6",
-        });
-      }
-
-      // Reset form
-      setForm({
-        name: "",
-        description: "",
-        price: "",
-        stock: "",
-        is_active: true,
-        category_id: "",
-        image: null,
-      });
-
-      setShowForm(false);
-    } catch (err) {
-      if (err.response?.status === 422) {
-        const messages = err.response.data.errors;
-        const errorText = Object.values(messages).flat().join(", ");
-        setError(errorText);
-      } else {
-        setError("Terjadi kesalahan saat menyimpan data produk.");
-      }
-    
-      Swal.fire({
-        title: "Gagal!",
-        text: "Gagal menyimpan produk. Silakan cek kembali input.",
-        icon: "error",
-        confirmButtonColor: "#d33",
-      });
-    
-      console.log(err.response?.data?.errors);
-    }    
-  };
+  
 
   return (
-    <div className="min-h-screen p-10 bg-gradient-to-br from-gray-100 to-gray-200">
+    <div className="min-h-screen px-4 py-8 md:p-10 bg-gradient-to-br from-gray-100 to-gray-200">
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md p-8 relative">
         <div className="flex justify-between items-center mb-6 relative">
-          <h1 className="text-3xl font-bold text-gray-800">
+          <h1 className="text-xl md:text-3xl font-bold text-gray-800">
             🛒 Manajemen Produk
           </h1>
           <Button onClick={() => setShowForm(!showForm)} icon={FaPlus}>
@@ -235,8 +261,8 @@ const AdminProducts = () => {
         {error && <p className="text-red-500 mb-4">{error}</p>}
 
         {/* Produk Table */}
-        <div className="overflow-x-auto shadow-lg border rounded-xl mb-8 bg-white">
-          <table className="w-full text-sm text-gray-700">
+        <div className="overflow-x-auto max-w-full shadow-lg border rounded-xl mb-8 bg-white">
+          <table className="w-full text-xs md:text-sm text-gray-700">
             <thead className="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-600 uppercase text-xs">
               <tr>
                 <th className="px-5 py-4 border-b text-left">Gambar</th>
@@ -244,7 +270,7 @@ const AdminProducts = () => {
                 <th className="px-5 py-4 border-b text-left">Deskripsi</th>
                 <th className="px-5 py-4 border-b text-left">Harga</th>
                 <th className="px-5 py-4 border-b text-left">Stok</th>
-                <th className="px-5 py-4 border-b text-center">Status</th>
+                <th className="px-5 py-4 border-b text-left">Status</th>
                 <th className="px-5 py-4 border-b text-center">Aksi</th>
               </tr>
             </thead>
@@ -273,7 +299,7 @@ const AdminProducts = () => {
                     Rp{parseInt(prod.price).toLocaleString()}
                   </td>
                   <td className="px-5 py-4">{prod.stock}</td>
-                  <td className="px-5 py-4 text-center">
+                  <td className="px-5 py-4">
                     <span
                       className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
                         prod.is_active
@@ -283,34 +309,29 @@ const AdminProducts = () => {
                     >
                       {prod.is_active ? "Aktif" : "Nonaktif"}
                     </span>
-                    <div className="mt-2">
-                      <button
-                        onClick={() => handleToggleStatus(prod)}
-                        className={`text-xs px-3 py-1 rounded-md font-semibold transition ${
-                          prod.is_active
-                            ? "bg-rose-500 hover:bg-rose-600 text-white"
-                            : "bg-emerald-500 hover:bg-emerald-600 text-white"
-                        }`}
-                      >
-                        {prod.is_active ? "Nonaktifkan" : "Aktifkan"}
-                      </button>
-                    </div>
                   </td>
                   <td className="px-5 py-4 text-center space-x-2">
-                    <Button
+                    <button
+                      onClick={() => handleToggleStatus(prod)}
+                      className="inline-flex items-center justify-center p-2 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700"
+                      title={prod.is_active ? "Nonaktifkan" : "Aktifkan"}
+                    >
+                      {prod.is_active ? <FaCheck /> : <FaTimes />}
+                    </button>
+                    <button
                       onClick={() => handleEdit(prod)}
-                      icon={FaEdit}
-                      className="bg-indigo-500 hover:bg-indigo-600 text-white text-sm"
+                      className="inline-flex items-center justify-center p-2 rounded-md bg-indigo-500 hover:bg-indigo-600 text-white"
+                      title="Edit"
                     >
-                      Edit
-                    </Button>
-                    <Button
+                      <FaEdit />
+                    </button>
+                    <button
                       onClick={() => handleDelete(prod.id)}
-                      icon={FaTrash}
-                      className="bg-red-500 hover:bg-red-600 text-white text-sm"
+                      className="inline-flex items-center justify-center p-2 rounded-md bg-red-500 hover:bg-red-600 text-white"
+                      title="Hapus"
                     >
-                      Hapus
-                    </Button>
+                      <FaTrash />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -326,12 +347,12 @@ const AdminProducts = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="absolute right-6 top-20 z-50 bg-white p-6 rounded-xl ring-1 ring-gray-200 drop-shadow-xl backdrop-blur w-full max-w-lg"
+              className="absolute z-50 bg-white p-6 rounded-xl ring-1 ring-gray-200 drop-shadow-xl backdrop-blur w-full max-w-lg right-4 left-4 top-24 md:left-auto md:right-6"
             >
               <h2 className="text-xl font-semibold mb-4">
                 📝 Tambah / Edit Produk
               </h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4 text-sm">
                 <input
                   type="text"
                   placeholder="Nama Produk"

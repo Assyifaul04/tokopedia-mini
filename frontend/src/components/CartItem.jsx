@@ -1,18 +1,18 @@
 import React from "react";
 
 const CartItem = ({ item, onUpdateQuantity, onRemoveItem }) => {
-  const formattedPrice = item.price ? Number(item.price).toLocaleString("id-ID") : "0";
+  const formattedPrice = item.product.price ? Number(item.product.price).toLocaleString("id-ID") : "0";
 
   return (
     <div className="flex justify-between items-center border-b py-4">
       <div className="flex items-center gap-4">
         <img
-          src={`http://localhost:8000/storage/${item.image}`}
-          alt={item.name}
+          src={`http://localhost:8000/storage/${item.product.image}`}
+          alt={item.product.name}
           className="w-20 h-20 object-cover rounded-md"
         />
         <div>
-          <h4 className="font-semibold text-lg">{item.name}</h4>
+          <h4 className="font-semibold text-lg">{item.product.name}</h4>
           <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
         </div>
       </div>

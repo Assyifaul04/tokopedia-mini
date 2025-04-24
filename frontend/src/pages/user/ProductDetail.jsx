@@ -25,8 +25,16 @@ export default function ProductDetail() {
     fetchProduct();
   }, [id]);
 
-  const handleAddToCart = () => {
-    console.log("Menambah produk ke keranjang:", product, quantity);
+  const handleAddToCart = async () => {
+    try {
+      await axios.post("/cart", {
+        product_id: product.id,
+        quantity: quantity
+      });
+      alert("Produk berhasil ditambahkan ke keranjang!");
+    } catch (err) {
+      console.error("Failed to add product to cart:", err);
+    }
   };
 
   const handleBuyNow = () => {
