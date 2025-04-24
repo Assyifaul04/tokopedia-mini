@@ -9,9 +9,20 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
-    // GET /api/products
+    public function public()
+{
+    $products = Product::where('is_active', true)->get();
+
+    return response()->json([
+        'status' => 'success',
+        'data' => $products
+    ]);
+}
+
+
     public function index()
     {
+
         $products = Product::with('category')->get();
         return response()->json($products);
     }
@@ -35,58 +46,77 @@ class ProductController extends Controller
             'price' => 'required|numeric',
             'stock' => 'required|integer',
             'image' => 'nullable|image|mimes:jpg,png,jpeg,gif|max:2048',
-            'is_active' => 'boolean'
+            'is_active' => 'nullable|boolean',
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-    
+
         $product = new Product;
         $product->category_id = $request->category_id;
         $product->name = $request->name;
         $product->description = $request->description;
         $product->price = $request->price;
         $product->stock = $request->stock;
-        $product->is_active = $request->is_active;
-    
+        $product->is_active = $request->has('is_active') ? $request->is_active : $product->is_active;
+
         if ($request->hasFile('image')) {
-            $imageName = time() . '.' . $request->image->extension();
-            $request->image->move(public_path('images'), $imageName);
-            $product->image = 'images/' . $imageName;
+            $imagePath = $request->file('image')->store('products', 'public');
+            $product->image = $imagePath;
         }
-    
+
         $product->save();
-    
+
         return response()->json($product, 201);
     }
 
-    // PUT /api/products/{id}
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'is_active' => 'required|boolean',
+        ]);
+
+        $product = Product::findOrFail($id);
+        $product->is_active = $request->is_active;
+        $product->save();
+
+        return response()->json([
+            'message' => 'Status produk berhasil diperbarui.',
+            'data' => $product
+        ]);
+    }
+
     public function update(Request $request, $id)
     {
-        $product = Product::find($id);
-        if (!$product) {
-            return response()->json(['message' => 'Product not found'], 404);
-        }
+        $product = Product::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'category_id' => 'required|exists:categories,id',
-            'name' => 'required|string|max:255',
+            'name' => 'required',
             'description' => 'nullable|string',
             'price' => 'required|numeric',
             'stock' => 'required|integer',
-            'image' => 'nullable|string',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
+            'category_id' => 'required|exists:categories,id',
+            'image' => 'required|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $product->update($request->all());
+        $validated = $validator->validated();
+        $validated = $request->all();
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('products', 'public');
+        }
+
+        $product->update($validated);
 
         return response()->json($product);
     }
+
+
 
     // DELETE /api/products/{id}
     public function destroy($id)

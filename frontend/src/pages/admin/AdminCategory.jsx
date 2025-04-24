@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import axios from '../../services/axios';
+import { AnimatePresence, motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { FiEdit, FiPlus, FiTrash2, FiX } from 'react-icons/fi';
 import Swal from 'sweetalert2';
-import { FiEdit, FiTrash2, FiPlus, FiX } from 'react-icons/fi';
-import { motion, AnimatePresence } from 'framer-motion';
+import axios from '../../services/axios';
 
 const AdminCategory = () => {
   const [categoryName, setCategoryName] = useState('');
@@ -61,8 +61,8 @@ const AdminCategory = () => {
       cancelButtonText: 'Batal',
       buttonsStyling: false,
       customClass: {
-        confirmButton: 'bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded',
-        cancelButton: 'bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium px-4 py-2 rounded',
+        confirmButton: 'ml-2 bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded',
+        cancelButton: 'ml-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium px-4 py-2 rounded',
       },
     });
 
