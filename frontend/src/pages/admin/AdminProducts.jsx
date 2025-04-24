@@ -151,8 +151,8 @@ const AdminProducts = () => {
       const formData = new FormData();
 
       Object.entries(form).forEach(([key, val]) => {
-        if (key === "image" && val) {
-          formData.append("image", val);
+        if (key === "image") {
+          if (val) formData.append("image", val); // hanya kirim kalau ada
         } else {
           formData.append(key, key === "is_active" ? (val ? 1 : 0) : val);
         }
@@ -201,19 +201,23 @@ const AdminProducts = () => {
 
       setShowForm(false);
     } catch (err) {
-      setError("Terjadi kesalahan saat menyimpan data produk.");
-
+      if (err.response?.status === 422) {
+        const messages = err.response.data.errors;
+        const errorText = Object.values(messages).flat().join(", ");
+        setError(errorText);
+      } else {
+        setError("Terjadi kesalahan saat menyimpan data produk.");
+      }
+    
       Swal.fire({
         title: "Gagal!",
-        text: "Untuk mengganti nama produk, Anda juga perlu memperbarui gambar produk yang terkait. Pastikan perubahan tersebut dilakukan secara bersamaan agar konsistensi data antara nama dan gambar produk tetap terjaga.",
+        text: "Gagal menyimpan produk. Silakan cek kembali input.",
         icon: "error",
         confirmButtonColor: "#d33",
       });
-
+    
       console.log(err.response?.data?.errors);
-    } finally {
-      setIsSubmitting(false);
-    }
+    }    
   };
 
   return (

@@ -1,10 +1,10 @@
-// Login.jsx (User)
+// AdminLogin.jsx
 import React, { useState } from 'react';
 import axios from '../../services/axios';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
-const Login = () => {
+const AdminLogin = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -20,7 +20,7 @@ const Login = () => {
         }
 
         try {
-            const response = await axios.post('/login', { email, password });
+            const response = await axios.post('/admin/login', { email, password });
 
             // Simpan token dan user ke localStorage
             localStorage.setItem('token', response.data.token);
@@ -29,12 +29,8 @@ const Login = () => {
                 role: response.data.role,
             }));
 
-            // Redirect berdasarkan role
-            if (response.data.role === 'admin') {
-                navigate('/dashboard');
-            } else {
-                navigate('/');
-            }
+            // Redirect ke dashboard admin
+            navigate('/dashboard');
         } catch (error) {
             setError('Email atau password salah');
         }
@@ -43,7 +39,7 @@ const Login = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
             <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-                <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">Login</h2>
+                <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">Admin Login</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <input
                         type="email"
@@ -83,4 +79,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default AdminLogin;

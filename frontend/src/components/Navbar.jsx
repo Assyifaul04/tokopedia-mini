@@ -1,8 +1,13 @@
+import {
+  Bell,
+  LogOut,
+  Mail,
+  Menu, Search,
+  ShoppingCart,
+  Store
+} from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  ShoppingCart, Bell, Mail, Store, Menu, Search, LogOut
-} from 'lucide-react';
 
 const Navbar = () => {
   const navigate = useNavigate();

@@ -92,13 +92,13 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required',
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric',
             'stock' => 'required|integer',
             'is_active' => 'boolean',
             'category_id' => 'required|exists:categories,id',
-            'image' => 'required|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'nullable|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -106,7 +106,6 @@ class ProductController extends Controller
         }
 
         $validated = $validator->validated();
-        $validated = $request->all();
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('products', 'public');
         }

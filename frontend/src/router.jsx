@@ -11,6 +11,7 @@ import AdminReports from './pages/admin/AdminReports'
 import Users from './pages/admin/Users'
 
 import Login from './pages/auth/Login'
+import AdminLogin from './pages/auth/AdminLogin'
 import Register from './pages/auth/Register'
 
 import Cart from './pages/user/Cart'
@@ -24,6 +25,7 @@ import UserPrivateRoute from './cache/UserPrivateRoute'
 
 const router = [
   // Auth
+  {path: '/admin/login', component: AdminLogin, layout: React.Fragment},
   { path: '/login', component: Login, layout: React.Fragment },
   { path: '/register', component: Register, layout: React.Fragment },
 

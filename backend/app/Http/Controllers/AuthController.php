@@ -37,7 +37,7 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required|string',
         ]);
-
+    
         if (Auth::attempt($request->only('email', 'password'))) {
             $user = Auth::user();
             $token = $user->createToken('YourAppName')->plainTextToken;
@@ -47,7 +47,7 @@ class AuthController extends Controller
                 'name' => $user->name,
             ]);
         }
-
+    
         throw ValidationException::withMessages([
             'email' => ['The provided credentials are incorrect.'],
         ]);

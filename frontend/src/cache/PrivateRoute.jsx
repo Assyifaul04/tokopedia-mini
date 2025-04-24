@@ -1,15 +1,19 @@
-import React from 'react'
-import { Navigate } from 'react-router-dom'
+import React from 'react';
+import { Navigate } from 'react-router-dom';
 
 const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem("token")
-  const user = localStorage.getItem("user")
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user"));
 
   if (!token || !user) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/admin/login" replace />;
   }
 
-  return children
-}
+  if (user.role !== 'admin') {
+    return <Navigate to="/" replace />; // Arahkan user biasa ke homepage
+  }
 
-export default PrivateRoute
+  return children;
+};
+
+export default PrivateRoute;

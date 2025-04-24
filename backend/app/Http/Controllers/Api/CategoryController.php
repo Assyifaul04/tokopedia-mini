@@ -8,14 +8,13 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    // Menampilkan semua kategori
+
     public function index()
     {
         $categories = Category::all();
         return response()->json($categories);
     }
 
-    // Menambah kategori baru
     public function store(Request $request)
     {
         $request->validate([
@@ -29,7 +28,6 @@ class CategoryController extends Controller
         return response()->json($category, 201);
     }
 
-    // Mengupdate kategori
     public function update(Request $request, $id)
     {
         $category = Category::findOrFail($id);
@@ -45,7 +43,6 @@ class CategoryController extends Controller
         return response()->json($category);
     }
 
-    // Menghapus kategori
     public function destroy($id)
     {
         $category = Category::findOrFail($id);

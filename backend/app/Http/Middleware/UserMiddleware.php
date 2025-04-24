@@ -16,6 +16,9 @@ class UserMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        return $next($request);
+        if ($request->user() && $request->user()->role === 'user') {
+            return $next($request);
+        }
+        return response()->json(['message' => 'Unauthorized'], 403);
     }
 }
